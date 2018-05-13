@@ -1,19 +1,19 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 const char* host = "13.231.134.238";
-//String url = "/trigger/temp/with/key/d7_KiOg3TqkS18HjgZOVe";   // Your Own Key here
 const int httpPort = 3000;
 int interval = 5000;
 
-const char* ssid = "AndroidHotspot4011";   // Your own ssid here
-const char* password = "1234567890";  // Your own password here fca1zg2399
+//const char* ssid = "AndroidHotspot4011";   // Your own ssid here
+const char* ssid = "Seolgi";   // Your own ssid here
+//const char* password = "1234567890999";  // Your own password here fca1zg2399
+const char* password = "12345678900";  // Your own password here fca1zg2399
 
 const int trigPin = 5; //D1
 const int echoPin = 4; //D2
-const int motion =  13; //D3
 float duration, distance;
-int cnt_use = 0;
-int cnt_empty = 0;
+int period = 0, use = 0, empty = 0;
+
 
 void delivering(String payload)
 {
@@ -27,7 +27,6 @@ void delivering(String payload)
     return;
   }
   String getheader = "GET /log?" + String(payload) + " HTTP/1.1";
- // String getheader = "/log?" + String(payload) + " HTTP/1.1";
   client.println(getheader);
   client.println("User-Agent: ESP8266 SukHwan Kim");
   client.println("Host: " + String(host));
@@ -61,7 +60,6 @@ void setup(){
   connect_ap();
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  pinMode(motion, INPUT);
 }
 
 void loop(){
@@ -73,25 +71,20 @@ void loop(){
   duration = pulseIn(echoPin, HIGH);
   distance = duration*0.034/2;
 
-  if(distance < 100) {
-    cnt_use = cnt_use + 1;
-  }
-  else{
-    cnt_empty = cnt_empty + 1;
-  }
-
-  if(cnt_use >= 10){
-    Serial.println("using");
-    delivering("key=kim&field1=kyuho");
-    cnt_empty = 0;
-  }
-  else if(cnt_empty >= 10){
-    Serial.println("empty");
-    cnt_use = 0;
-  }
- 
+  if(distance < 100) use++;
+  else empty++;
   Serial.print("\nDIstance:");
   Serial.print(distance);
   Serial.println("cm\n");
+
+  
+  if(period == 10){
+    period = 0;
+    if(use >= empty) delivering("key=room1&field1=1");
+    else delivering("key=room1&field1=0");
+    use = empty = 0;
+  }
+  period++;
   delay(1000);
 }
+
