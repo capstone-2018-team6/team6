@@ -11,9 +11,10 @@ const char* password = "12345678900";  // Your own password here fca1zg2399
 
 const int trigPin = 5; //D1
 const int echoPin = 4; //D2
+const int motion =  13; //D7
 float duration, distance;
 int period = 0, use = 0, empty = 0;
-
+int m_flag = 0;
 
 void delivering(String payload)
 {
@@ -60,31 +61,40 @@ void setup(){
   connect_ap();
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(motion, INPUT);
 }
 
 void loop(){
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  distance = duration*0.034/2;
-
-  if(distance < 100) use++;
-  else empty++;
-  Serial.print("\nDIstance:");
-  Serial.print(distance);
-  Serial.println("cm\n");
-
-  
-  if(period == 10){
-    period = 0;
-    if(use >= empty) delivering("key=room1&field1=1");
-    else delivering("key=room1&field1=0");
-    use = empty = 0;
+  if(digitalRead(motion)==HIGH){
+    Serial.println("Motion detected!");
+    m_flag = 1;
   }
-  period++;
-  delay(1000);
+  if(m_flag){  
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    duration = pulseIn(echoPin, HIGH);
+    distance = duration*0.034/2;
+  
+    if(distance < 100) use++;
+    else empty++;
+    Serial.print("\nDIstance:");
+    Serial.print(distance);
+    Serial.println("cm\n");
+  
+    
+    if(period == 10){
+      period = 0;
+      if(use >= empty) delivering("key=room1&field1=1");                  //field1 == 1 : using
+      else {
+        delivering("key=room1&field1=0");                                 //field1 == 0 : empty
+        m_flag = 0;
+      }
+      use = empty = 0;
+    }
+    period++;
+    delay(1000);
+  }
 }
-
