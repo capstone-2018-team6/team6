@@ -87,9 +87,9 @@ void loop(){
     
     if(period == 10){
       period = 0;
-      if(use >= empty) delivering("key=room1&field1=1");                  //field1 == 1 : using
+      if(use >= empty) delivering("floor=1&number=1&usable=1");                  //field1 == 1 : using
       else {
-        delivering("key=room1&field1=0");                                 //field1 == 0 : empty
+        delivering("floor=1&number=1&usable=0");                                 //field1 == 0 : empty
         m_flag = 0;
       }
       use = empty = 0;
